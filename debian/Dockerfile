@@ -55,7 +55,7 @@ RUN groupadd --system --gid 636 apisix \
     && useradd --system --gid apisix --no-create-home --shell /usr/sbin/nologin --uid 636 apisix \
     && chown -R apisix:apisix /usr/local/apisix
 
-USER apisix
+# USER apisix
 
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /usr/local/apisix/logs/access.log \
