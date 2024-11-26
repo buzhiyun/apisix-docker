@@ -19,6 +19,9 @@ FROM debian:bullseye-slim
 
 ARG APISIX_VERSION=3.11.0
 
+COPY ./install-brotli.sh /install-brotli.sh
+COPY ./docker-entrypoint.sh /docker-entrypoint.sh
+
 RUN set -ex; \
     arch=$(dpkg --print-architecture); \
     apt update; \
@@ -39,31 +42,27 @@ RUN set -ex; \
     && apt-get purge -y --auto-remove \
     && rm /usr/local/openresty/bin/etcdctl \
     && openresty -V \
-    && apisix version
+    && apisix version \
 
-COPY ./install-brotli.sh /install-brotli.sh
-RUN chmod +x /install-brotli.sh \  
-    && cd / && ./install-brotli.sh && rm -rf /install-brotli.sh
+    && chmod +x /install-brotli.sh \  
+    && cd / && ./install-brotli.sh && rm -rf /install-brotli.sh \
 
-RUN apt-get -y purge --auto-remove curl wget gnupg --allow-remove-essential
+    && apt-get -y purge --auto-remove curl wget gnupg --allow-remove-essential \
+
+    && groupadd --system --gid 636 apisix \
+    && useradd --system --gid apisix --no-create-home --shell /usr/sbin/nologin --uid 636 apisix \
+    && chown -R apisix:apisix /usr/local/apisix \
+
+    && ln -sf /dev/stdout /usr/local/apisix/logs/access.log \
+    && ln -sf /dev/stderr /usr/local/apisix/logs/error.log
 
 WORKDIR /usr/local/apisix
 
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
 
-RUN groupadd --system --gid 636 apisix \
-    && useradd --system --gid apisix --no-create-home --shell /usr/sbin/nologin --uid 636 apisix \
-    && chown -R apisix:apisix /usr/local/apisix
-
-# USER apisix
-
-# forward request and error logs to docker log collector
-RUN ln -sf /dev/stdout /usr/local/apisix/logs/access.log \
-    && ln -sf /dev/stderr /usr/local/apisix/logs/error.log
 
 EXPOSE 9080 9443
 
-COPY ./docker-entrypoint.sh /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
