@@ -23,7 +23,7 @@ SHELL := bash
 # APISIX ARGS
 APISIX_VERSION ?= 3.11.0
 MAX_APISIX_VERSION ?= 3.11.0
-IMAGE_NAME = apache/apisix
+IMAGE_NAME = buzhiyun/apisix
 IMAGE_TAR_NAME = apache_apisix
 APISIX_REPO = https://github.com/apache/apisix
 APISIX_REPO_BRANCH = master
